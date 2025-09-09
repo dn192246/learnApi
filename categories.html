@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gestión de Categorías</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous" />
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <!--Favicon-->
+    <link rel="shortcut icon" href="img/Icono-Desarrollo-de-Software-Negro-2023.ai.png" type="image/x-icon">
+    <script type="module" src="js/utils/authGuard.js"></script>
+</head>
+
+<body>
+    <!-- Navbar con menú -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">Inventario</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Mostrar menú">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul id="mainMenu" class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html" id="loginLink">Iniciar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4">Lista de Categorías</h2>
+
+            <div>
+                <div id="userBox" class="d-none"></div>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#categoryModal"
+                    id="btnAddCategory">
+                    <i class="bi bi-plus-lg me-1"></i> Agregar
+                </button>
+            </div>
+
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle" id="categoriesTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Fecha de Creación</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <td colspan="5">Actualmente no hay registros</td>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Crear/Editar Categoría -->
+    <div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-3">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" id="categoryModalLabel">Agregar Categoría</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form id="categoryForm">
+                    <input type="hidden" id="categoryId" />
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="categoryName" class="form-label">Nombre <span style="color:red">*</span></label>
+                            <input type="text" class="form-control" id="categoryName"
+                                placeholder="Nombre de la categoría" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="categoryDescription" class="form-label">Descripción <span
+                                    style="color:red">*</span></label>
+                            <textarea id="categoryDescription" class="form-control" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success" id="saveCategory">
+                            Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Bootstrap bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+        crossorigin="anonymous"></script>
+    <!-- Main JS -->
+    <script type="module" src="js/controllers/sessionController.js"></script>
+    <script type="module" src="js/controllers/categoryController.js"></script>
+
+</body>
+
+</html>

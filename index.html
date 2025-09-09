@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos Disponibles</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous" />
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <!--Favicon-->
+    <link rel="shortcut icon" href="img/Icono-Desarrollo-de-Software-Negro-2023.ai.png" type="image/x-icon">
+
+    <!--Evitar Caché en esta página protegida-->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">Inventario</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Mostrar menú">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul id="mainMenu" class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="index.html">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html" id="loginLink">Iniciar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+
+    <main class="container mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="h3 m-0">Productos disponibles</h1>
+            <div id="userBox" class="d-none"></div>
+        </div>
+        <div id="cardsContainer" class="row g-3"></div>
+    </main>
+
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+        crossorigin="anonymous"></script>
+    <script type="module" src="js/controllers/sessionController.js"></script>
+    <script type="module" src="js/controllers/indexController.js"></script>
+
+</body>
+
+</html>

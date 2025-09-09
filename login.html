@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio de Sesión</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous" />
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="css/login.css" />
+    <!--Favicon-->
+    <link rel="shortcut icon" href="img/Icono-Desarrollo-de-Software-Negro-2023.ai.png" type="image/x-icon">
+
+
+    <!--Evitar Caché en esta página protegida-->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+</head>
+
+<body>
+
+    <section class="loginBox">
+
+        <figure class="center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="lucide lucide-lock-icon lucide-lock">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+        </figure>
+
+
+        <h1 class="text-center">Inicio de Sesión</h1>
+
+        <form id="loginForm" action="products.html">
+            <div class="form-group mb-4">
+                <label for="correo">Correo Electrónico</label>
+                <input type="text" id="correo" class="form-control">
+            </div>
+
+            <div class="form-group mb-4">
+                <label for="contrasena">Contraseña</label>
+                <input type="password" id="contrasena" class="form-control">
+            </div>
+
+            <div class="form-check form-switch mb-3">
+                <input type="checkbox" class="form-check-input" id="ckRemember">Recordar Usuario
+            </div>
+
+            <input type="submit" id="btnIngresar" value="Iniciar Sesión" class="form-control btn btn-primary mb-3">
+            <span id="loginAlert"></span>
+        </form>
+
+        <a href="index.html">Volver a inicio</a>
+
+    </section>
+
+    <!-- JS Bootstrap bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+        crossorigin="anonymous"></script>
+  <script type="module" src="js/controllers/loginController.js"></script>
+</body>
+
+</html>

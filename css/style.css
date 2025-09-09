@@ -1,0 +1,45 @@
+/* Fondo suave */
+body {
+    background: #f2f5f9;
+}
+
+/* Tablas con bordes redondeados y sombra */
+.table {
+    background: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+}
+
+/* Botones más redondos */
+.btn-primary,
+.btn-secondary {
+    border-radius: 2rem;
+}
+
+/* Modal con esquinas redondeadas */
+.modal-content {
+    border-radius: 1rem;
+}
+
+/* Encabezado de navbar ligero */
+.navbar {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.img-preview {
+    width: 100%;
+    max-height: 220px;
+    object-fit: contain;
+    border: 1px solid #e9ecef;
+    border-radius: .5rem;
+    background: #fafafa;
+}
+
+.thumb {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: .4rem;
+    border: 1px solid #e9ecef;
+}
+

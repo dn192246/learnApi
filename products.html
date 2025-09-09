@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestión de Productos</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+  <!--Favicon-->
+  <link rel="shortcut icon" href="img/Icono-Desarrollo-de-Software-Negro-2023.ai.png" type="image/x-icon">
+  <script type="module" src="js/utils/authGuard.js"></script>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-4">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">Inventario</a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+        aria-controls="mainNav" aria-expanded="false" aria-label="Mostrar menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul id="mainMenu" class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="login.html" id="loginLink">Iniciar Sesión</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="h4">Lista de Productos</h2>
+
+      <div>
+        <div id="userBox" class="d-none"></div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#itemModal" id="btnAdd">
+          <i class="bi bi-plus-lg me-1"></i> Agregar
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Selector de tamaño -->
+    <div class="d-flex justify-content-start align-items-center mb-3">
+      <label for="pageSize" class="form-label mb-0">Mostrar:</label>
+      <select id="pageSize" class="form-select w-auto ms-2">
+        <option value="2">2</option>
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+      </select>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-responsive">
+      <table class="table table-hover align-middle" id="itemsTable">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Imagen</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Stock</th>
+            <th>Fecha de Ingreso</th>
+            <th>Precio</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="8">Actualmente no hay registros</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <nav>
+      <ul class="pagination justify-content-center my-4" id="pagination"></ul>
+    </nav>
+  </div>
+
+  <!-- Modal Crear/Editar -->
+  <div class="modal fade" id="itemModal" tabindex="-1" aria-labelledby="itemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-3">
+        <div class="modal-header border-0">
+          <h5 class="modal-title" id="itemModalLabel">Agregar Producto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <form id="productForm">
+          <!-- IDs/ocultos -->
+          <input type="hidden" id="productId" />
+          <input type="hidden" id="productImageUrl" />
+
+          <div class="modal-body">
+            <!-- Imagen -->
+            <div class="mb-3">
+              <label for="productImageFile" class="form-label">Imagen</label>
+              <input type="file" class="form-control" id="productImageFile" accept="image/*" />
+              <div class="mt-2">
+                <img id="productImagePreview" class="img-preview" alt="Vista previa" src="" />
+              </div>
+              <div class="form-text">Si no seleccionas una imagen, se conservará (en edición) o quedará vacía (en
+                creación).</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="productName" class="form-label">Nombre <span style="color:red">*</span></label>
+              <input type="text" class="form-control" id="productName" required />
+            </div>
+
+            <div class="mb-3">
+              <label for="productDescription" class="form-label">Descripción <span style="color:red">*</span></label>
+              <textarea class="form-control" id="productDescription" required></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="productStock" class="form-label">Unidades Disponibles <span style="color:red">*</span></label>
+              <input type="number" min="0" step="1" class="form-control" id="productStock" required />
+            </div>
+
+            <div class="mb-3">
+              <label for="productPrice" class="form-label">Precio <span style="color:red">*</span></label>
+              <input type="number" step="0.01" class="form-control" id="productPrice" required />
+            </div>
+
+            <div class="mb-3">
+              <label for="productDate" class="form-label">Fecha de Ingreso <span style="color:red">*</span></label>
+              <input type="date" id="productDate" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="productCategory" class="form-label">Categoría <span style="color:red">*</span></label>
+              <select class="form-select" id="productCategory" required>
+                <option value="" disabled selected hidden>Seleccione...</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-footer border-0">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="saveProduct">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+    crossorigin="anonymous"></script>
+
+  <!-- Main JS -->
+  <script type="module" src="js/controllers/sessionController.js"></script>
+  <script type="module" src="js/controllers/productController.js"></script>
+
+</body>
+
+</html>
