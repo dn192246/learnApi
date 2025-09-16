@@ -117,7 +117,6 @@ export async function requireAuth({ redirect = true } = {}) {
 }
 
 // Usa exactamente los valores que vienen en /me
-
 export function getUserRole() {
   // "Administrador" | "Almacenista" | "Cliente" (o undefined)
   return auth.user?.rol || "";
