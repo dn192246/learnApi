@@ -12,7 +12,8 @@ import { getCategories } from "../services/categoryService.js";
 import { uploadImageToFolder } from "../services/imageService.js";
 
 // Integración de sesión, menú y guard
-import { renderUser, requireAuth } from "./sessionController.js";
+import { renderUser, requireAuth, role } from "./sessionController.js";
+
 
 // --- 2. Variables globales para la paginación ---
 let currentPage = 0;
@@ -50,6 +51,11 @@ function ActivarListeners() {
   const modal = new bootstrap.Modal(document.getElementById("itemModal"));
   const modalLabel = document.getElementById("itemModalLabel");
   const btnAdd = document.getElementById("btnAdd");
+
+  // Ocultar "Agregar" si NO es Admin ni Almacenista
+  if (!(role.isAdmin() || role.isAlmacenista())) {
+    btnAdd?.classList.add("d-none");
+  }
 
   const imageFileInput = document.getElementById("productImageFile");
   const imageUrlHidden = document.getElementById("productImageUrl");
@@ -205,12 +211,16 @@ async function cargarProductos() {
 
       // Columna de botones de acción
       const tdBtns = document.createElement("td");
+      tdBtns.className = "text-nowrap";
 
-      // Botón Editar → abre modal con formulario
-      const btnEdit = document.createElement("button");
-      btnEdit.className = "btn btn-sm btn-outline-secondary me-1 edit-btn";
-      btnEdit.title = "Editar";
-      btnEdit.innerHTML = `
+      //Verificar roles del usuario
+      if (role.isAdmin() || role.isAlmacenista()) {
+
+        // Botón Editar → abre modal con formulario
+        const btnEdit = document.createElement("button");
+        btnEdit.className = "btn btn-sm btn-outline-secondary me-1 edit-btn";
+        btnEdit.title = "Editar";
+        btnEdit.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
           viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -218,14 +228,14 @@ async function cargarProductos() {
           <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
           <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/>
         </svg>`;
-      btnEdit.addEventListener("click", () => setFormulario(item));
-      tdBtns.appendChild(btnEdit);
+        btnEdit.addEventListener("click", () => setFormulario(item));
+        tdBtns.appendChild(btnEdit);
 
-      // Botón Eliminar → pide confirmación antes de eliminar
-      const btnDel = document.createElement("button");
-      btnDel.className = "btn btn-sm btn-outline-danger delete-btn";
-      btnDel.title = "Eliminar";
-      btnDel.innerHTML = `
+        // Botón Eliminar → pide confirmación antes de eliminar
+        const btnDel = document.createElement("button");
+        btnDel.className = "btn btn-sm btn-outline-danger delete-btn";
+        btnDel.title = "Eliminar";
+        btnDel.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
           viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -234,12 +244,17 @@ async function cargarProductos() {
           <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
           <path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
         </svg>`;
-      btnDel.addEventListener("click", () => {
-        if (confirm("¿Eliminar este producto?")) {
-          eliminarProducto(item.id);
-        }
-      });
-      tdBtns.appendChild(btnDel);
+        btnDel.addEventListener("click", () => {
+          if (confirm("¿Eliminar este producto?")) {
+            eliminarProducto(item.id);
+          }
+        });
+        tdBtns.appendChild(btnDel);
+      }
+      else {
+        tdBtns.innerHTML = ""; // Cliente: sin acciones
+      }
+
 
       tr.appendChild(tdBtns);
 
@@ -264,9 +279,6 @@ async function cargarCategorias() {
     // 1. Solicita categorías al backend
     const data = await getCategories();
 
-    // 2. Se asume respuesta paginada: se obtiene data.content
-    const cats = Array.isArray(data?.content) ? data.content : [];
-
     // 3. Limpia el contenido actual del <select>
     select.innerHTML = "";
 
@@ -280,7 +292,7 @@ async function cargarCategorias() {
     select.appendChild(opt);
 
     // 5. Recorre cada categoría y genera una <option> en el <select>
-    cats.forEach((c) => {
+    data.forEach((c) => {
       const id = c.idCategoria ?? c.id ?? c.categoriaId; // posibles nombres de ID según backend
       const nombre = c.nombreCategoria ?? c.nombre ?? "Categoría"; // posibles nombres de campo para nombre
       const option = document.createElement("option");

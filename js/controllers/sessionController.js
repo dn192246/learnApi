@@ -116,6 +116,31 @@ export async function requireAuth({ redirect = true } = {}) {
   return auth.ok; // devuelve booleano indicando si hay sesión
 }
 
+// Usa exactamente los valores que vienen en /me
+
+export function getUserRole() {
+  // "Administrador" | "Almacenista" | "Cliente" (o undefined)
+  return auth.user?.rol || "";
+}
+
+export function hasAuthority(authority) {
+  // "ROLE_Administrador", "ROLE_Almacenista", "ROLE_Cliente"
+  return Array.isArray(auth.user?.authorities)
+    ? auth.user.authorities.includes(authority)
+    : false;
+}
+
+export const role = {
+  isAdmin: () =>
+    getUserRole() === "Administrador" || hasAuthority("ROLE_Administrador"),
+
+  isAlmacenista: () =>
+    getUserRole() === "Almacenista" || hasAuthority("ROLE_Almacenista"),
+
+  isCliente: () =>
+    getUserRole() === "Cliente" || hasAuthority("ROLE_Cliente"),
+};
+
 // Refresca automáticamente la sesión y el menú al volver con botón Atrás (bfcache)
 window.addEventListener("pageshow", async () => {
   await renderUser();

@@ -7,7 +7,7 @@ import {
   createCategory,
 } from "../services/categoryService.js";
 
-import { renderUser, requireAuth } from "./sessionController.js";
+import { renderUser, requireAuth, role } from "./sessionController.js";
 
 // Para evitar múltiples registros de listeners si se vuelve con el botón Atrás (bfcache)
 let listenersActivos = false;
@@ -32,8 +32,13 @@ function activarListeners() {
   const form = document.getElementById("categoryForm");
   const modal = new bootstrap.Modal(document.getElementById("categoryModal"));
   const lbModal = document.getElementById("categoryModalLabel");
-  const btnAdd = document.getElementById("btnAddCategory");
   const btnSave = document.getElementById("saveCategory");
+  const btnAdd = document.getElementById("btnAddCategory");
+
+  if (!role.isAdmin()) {
+    document.getElementById("btnAddCategory")?.classList.add("d-none");
+  }
+
 
   // Abrir modal en modo "Agregar"
   btnAdd?.addEventListener("click", () => {
@@ -128,7 +133,10 @@ async function loadCategories() {
       // --- Acciones ---
       const tdBtns = document.createElement("td");
       tdBtns.className = "text-nowrap";
-      tdBtns.innerHTML = `
+
+      //Verificar rol del usuario
+      if (role.isAdmin()) {
+        tdBtns.innerHTML = `
         <button class="btn btn-sm btn-outline-secondary me-1 edit-btn" title="Editar">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
             viewBox="0 0 24 24" fill="none" stroke="currentColor" 
@@ -148,29 +156,33 @@ async function loadCategories() {
         </button>
       `;
 
-      // Editar
-      tdBtns.querySelector(".edit-btn")?.addEventListener("click", () => {
-        form.categoryId.value = cat.idCategoria ?? cat.id ?? "";
-        form.categoryName.value = cat.nombreCategoria ?? cat.nombre ?? "";
-        form.categoryDescription.value = cat.descripcion ?? "";
-        lbModal.textContent = "Editar Categoría";
-        modal.show();
-      });
+        // Editar
+        tdBtns.querySelector(".edit-btn")?.addEventListener("click", () => {
+          form.categoryId.value = cat.idCategoria ?? cat.id ?? "";
+          form.categoryName.value = cat.nombreCategoria ?? cat.nombre ?? "";
+          form.categoryDescription.value = cat.descripcion ?? "";
+          lbModal.textContent = "Editar Categoría";
+          modal.show();
+        });
 
-      // Eliminar
-      tdBtns.querySelector(".delete-btn")?.addEventListener("click", async () => {
-        const id = cat.idCategoria ?? cat.id;
-        if (!id) return;
-        if (confirm("¿Desea eliminar la categoría?")) {
-          try {
-            await deleteCategory(id);
-            await loadCategories();
-          } catch (err) {
-            console.error("Error eliminando categoría: ", err);
-            alert("No se pudo eliminar la categoría.");
+        // Eliminar
+        tdBtns.querySelector(".delete-btn")?.addEventListener("click", async () => {
+          const id = cat.idCategoria ?? cat.id;
+          if (!id) return;
+          if (confirm("¿Desea eliminar la categoría?")) {
+            try {
+              await deleteCategory(id);
+              await loadCategories();
+            } catch (err) {
+              console.error("Error eliminando categoría: ", err);
+              alert("No se pudo eliminar la categoría.");
+            }
           }
-        }
-      });
+        });
+      }
+      else {
+        tdBtns.innerHTML = ""; // Almacenista/Cliente: sin acciones
+      }
 
       tr.appendChild(tdBtns);
       tableBody.appendChild(tr);
