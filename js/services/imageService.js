@@ -1,5 +1,4 @@
 // js/services/imageService.js
-//const IMAGE_API = 'http://localhost:8080/api/image'; // Local
 const IMAGE_API = 'https://learnapifront-9de8a2348f9a.herokuapp.com/api/image'; // Remoto
 
 // Sube una imagen y devuelve el JSON del backend: { message, url }

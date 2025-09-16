@@ -1,64 +1,59 @@
 // js/controllers/productController.js
 
-// --- 1. Importamos servicios para comunicación con la API ---
+// --- 1. Importación de servicios para comunicación con la API ---
 import {
   getProducts,
   createProduct,
   updateProduct,
   deleteProduct,
-  // getProductById // si lo tienes, puedes usarlo en editar
 } from "../services/productService.js";
 
 import { getCategories } from "../services/categoryService.js";
 import { uploadImageToFolder } from "../services/imageService.js";
 
-// 👇 NUEVO: integrar sesión/menú y guard
+// Integración de sesión, menú y guard
 import { renderUser, requireAuth } from "./sessionController.js";
 
 // --- 2. Variables globales para la paginación ---
 let currentPage = 0;
 let currentSize = 10;
 
-// Para no duplicar listeners si pageshow corre más de una vez
-let _listenersBound = false;
+// Evita duplicar listeners si pageshow se ejecuta más de una vez
+let listenersActivos = false;
 
-// --- 3. Arranque robusto con pageshow (cubre bfcache) ---
+// --- 3. Arranque robusto con pageshow ---
+// Este evento cubre también los casos en que el navegador usa Back-Forward Cache.
+// Garantiza que la sesión y los datos sean revalidados.
 window.addEventListener("pageshow", async () => {
-  // Menú, saludo, logout
-  await renderUser();
-
-  // Pide sesión; si no hay, redirige a login
-  const ok = await requireAuth({ redirect: true });
+  await renderUser(); // pinta menú y saludo
+  const ok = await requireAuth({ redirect: true }); // verifica autenticación
   if (!ok) return;
 
-  // Enlazar listeners una sola vez
-  if (!_listenersBound) bindOnce();
+  if (!listenersActivos) ActivarListeners();
 
-  // Tamaño inicial
+  // Inicializa tamaño de página desde el <select>
   const sizeSelector = document.getElementById("pageSize");
   currentSize = parseInt(sizeSelector?.value || "10") || 10;
   currentPage = 0;
 
-  // Datos iniciales
+  // Carga inicial de datos
   await cargarCategorias();
   await cargarProductos();
 });
 
-// Enlaza handlers/UI solo una vez
-function bindOnce() {
-  _listenersBound = true;
+// Enlaza los eventos de la interfaz una sola vez
+function ActivarListeners() {
+  listenersActivos = true;
 
-  // Referencias a elementos del DOM
   const tableBody = document.querySelector("#itemsTable tbody");
   const form = document.getElementById("productForm");
-  const modal = new bootstrap.Modal(document.getElementById("itemModal")); // Bootstrap modal
+  const modal = new bootstrap.Modal(document.getElementById("itemModal"));
   const modalLabel = document.getElementById("itemModalLabel");
   const btnAdd = document.getElementById("btnAdd");
 
-  // Campos para manejo de imágenes
-  const imageFileInput = document.getElementById("productImageFile"); // Input type="file"
-  const imageUrlHidden = document.getElementById("productImageUrl");  // Campo hidden
-  const imagePreview = document.getElementById("productImagePreview"); // Preview <img>
+  const imageFileInput = document.getElementById("productImageFile");
+  const imageUrlHidden = document.getElementById("productImageUrl");
+  const imagePreview = document.getElementById("productImagePreview");
 
   // --- 4. Previsualizar imagen seleccionada ---
   if (imageFileInput && imagePreview) {
@@ -66,7 +61,7 @@ function bindOnce() {
       const file = imageFileInput.files?.[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = () => (imagePreview.src = reader.result); // Mostrar preview
+        reader.onload = () => (imagePreview.src = reader.result);
         reader.readAsDataURL(file);
       } else {
         imagePreview.src = imageUrlHidden?.value || "";
@@ -82,33 +77,33 @@ function bindOnce() {
     cargarProductos();
   });
 
-  // --- 6. Botón "Agregar" resetea formulario y abre modal ---
+  // --- 6. Botón "Agregar" ---
   btnAdd?.addEventListener("click", () => {
     limpiarFormulario();
     modalLabel.textContent = "Agregar Producto";
     modal.show();
   });
 
-  // --- 7. Submit del formulario (Crear/Actualizar producto) ---
+  // --- 7. Submit del formulario (crear/actualizar producto) ---
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     let id = form.productId.value;
 
-    // --- 8. Manejo de imagen: usar valor actual o subir nueva ---
+    // --- 8. Manejo de imagen ---
     let finalImageUrl = imageUrlHidden?.value || "";
     const file = imageFileInput?.files?.[0];
     if (file) {
       try {
-        const data = await uploadImageToFolder(file, "products"); // Subir al backend
+        const data = await uploadImageToFolder(file, "products");
         finalImageUrl = data.url || "";
       } catch (err) {
         console.error("Error subiendo imagen:", err);
         alert("No se pudo subir la imagen. Intenta nuevamente.");
-        return; // Si falla la subida, no guardamos producto
+        return;
       }
     }
 
-    // --- 9. Construcción del payload para enviar a API ---
+    // --- 9. Construcción del payload ---
     const payload = {
       nombre: form.productName.value.trim(),
       precio: Number(form.productPrice.value),
@@ -116,8 +111,8 @@ function bindOnce() {
       stock: Number(form.productStock.value),
       fechaIngreso: form.productDate.value,
       categoriaId: Number(form.productCategory.value),
-      usuarioId: 2, // Por ahora fijo (ajústalo cuando tengas user real)
-      imagen_url: finalImageUrl || null, // <-- mantiene tu campo backend
+      usuarioId: 2,
+      imagen_url: finalImageUrl || null,
     };
 
     // --- 10. Crear o actualizar producto ---
@@ -128,55 +123,51 @@ function bindOnce() {
         await createProduct(payload);
       }
       modal.hide();
-      await cargarProductos(); // Refrescar tabla
+      await cargarProductos();
     } catch (err) {
       console.error("Error guardando:", err);
       alert("Ocurrió un error al guardar el producto.");
     }
   });
 
-  // Exponer en closures lo que usa más abajo
-  // (para no re-declarar en cada llamada)
-  bindOnce._refs = { tableBody, form, modal, modalLabel, imageFileInput, imageUrlHidden, imagePreview };
+  // Guarda referencias en un objeto asociado a la función
+  ActivarListeners._refs = { tableBody, form, modal, modalLabel, imageFileInput, imageUrlHidden, imagePreview };
 }
 
-// --- 11. Cargar productos con paginación (soporta pageable o array) ---
+// --- 11. Cargar productos con paginación ---
 async function cargarProductos() {
-  const { tableBody } = bindOnce._refs || {};
-  if (!tableBody) return;
+  const { tableBody } = ActivarListeners._refs || {};
+  if (!tableBody) return; // si aún no hay tabla, no hace nada
 
   try {
-    // Aquí mandamos a traer productos del backend.
-    // Le indicamos la cantidad de registros y la página actual.
+    // Solicitud al backend de la página y tamaño actuales
     const data = await getProducts(currentPage, currentSize);
 
-    // Normalización por si el backend devuelve array plano
-    const items = Array.isArray(data?.content) ? data.content : (Array.isArray(data) ? data : []);
-    const pageNumber  = Number.isFinite(data?.number) ? data.number : currentPage;
-    const totalPages  = Number.isFinite(data?.totalPages) ? data.totalPages
-                       : Math.max(1, Math.ceil((Array.isArray(data) ? data.length : (data?.totalElements || items.length || 0)) / currentSize));
+    // Se asume respuesta paginada: { content, number, totalPages, totalElements }
+    const items = data?.content ?? [];
+    const pageNumber = data?.number ?? currentPage;
+    const totalPages = data?.totalPages ?? 1;
 
-    // Limpiamos la tabla antes de llenarla.
+    // Limpieza de tabla y renderizado de la paginación
     tableBody.innerHTML = "";
     renderPagination(pageNumber, totalPages);
 
-    // --- 12. Renderizado de filas en la tabla ---
+    // --- 12. Renderizado de filas ---
     items.forEach((item) => {
-      // Por cada registro se crea un <tr>
       const tr = document.createElement("tr");
 
-      // ID
+      // ID del producto
       const tdId = document.createElement("td");
       tdId.textContent = item.id;
       tr.appendChild(tdId);
 
-      // Imagen
+      // Imagen (si existe se muestra, si no aparece “Sin imagen”)
       const tdImg = document.createElement("td");
       if (item.imagen_url) {
         const img = document.createElement("img");
         img.className = "thumb";
         img.alt = "img";
-        img.src = item.imagen_url; // Opcional: validar dominio aquí
+        img.src = item.imagen_url;
         tdImg.appendChild(img);
       } else {
         const span = document.createElement("span");
@@ -186,7 +177,7 @@ async function cargarProductos() {
       }
       tr.appendChild(tdImg);
 
-      // Nombre
+      // Nombre del producto (con fallback por compatibilidad)
       const tdNombre = document.createElement("td");
       tdNombre.textContent = item.nombre ?? item.nombreProducto ?? "Producto";
       tr.appendChild(tdNombre);
@@ -196,25 +187,26 @@ async function cargarProductos() {
       tdDesc.textContent = item.descripcion ?? "";
       tr.appendChild(tdDesc);
 
-      // Stock
+      // Stock disponible
       const tdStock = document.createElement("td");
       tdStock.textContent = item.stock ?? 0;
       tr.appendChild(tdStock);
 
-      // Fecha
+      // Fecha de ingreso (compatibilidad con distintos nombres de campo)
       const tdFecha = document.createElement("td");
       tdFecha.textContent = item.fechaIngreso ?? item.createdAt ?? item.fecha ?? "";
       tr.appendChild(tdFecha);
 
-      // Precio
+      // Precio (con formato numérico de 2 decimales)
       const tdPrecio = document.createElement("td");
       const precioNum = Number(item.precio ?? item.precioUnitario ?? 0);
       tdPrecio.textContent = `$${precioNum.toFixed(2)}`;
       tr.appendChild(tdPrecio);
 
-      // Botones Editar/Eliminar
+      // Columna de botones de acción
       const tdBtns = document.createElement("td");
 
+      // Botón Editar → abre modal con formulario
       const btnEdit = document.createElement("button");
       btnEdit.className = "btn btn-sm btn-outline-secondary me-1 edit-btn";
       btnEdit.title = "Editar";
@@ -229,6 +221,7 @@ async function cargarProductos() {
       btnEdit.addEventListener("click", () => setFormulario(item));
       tdBtns.appendChild(btnEdit);
 
+      // Botón Eliminar → pide confirmación antes de eliminar
       const btnDel = document.createElement("button");
       btnDel.className = "btn btn-sm btn-outline-danger delete-btn";
       btnDel.title = "Eliminar";
@@ -250,25 +243,34 @@ async function cargarProductos() {
 
       tr.appendChild(tdBtns);
 
-      // Añadir fila
+      // Inserta la fila en la tabla
       tableBody.appendChild(tr);
     });
   } catch (err) {
+    // En caso de error, se muestra mensaje en la tabla
     console.error("Error cargando productos:", err);
     tableBody.innerHTML = `<tr><td colspan="8" class="text-danger">No se pudieron cargar los productos.</td></tr>`;
   }
 }
 
-// --- 13. Cargar categorías para <select> (soporta pageable o array) ---
+
+// --- 13. Cargar categorías ---
 async function cargarCategorias() {
+  // Referencia al <select> donde se mostrarán las categorías
   const select = document.getElementById("productCategory");
-  if (!select) return;
+  if (!select) return; // si no existe el select, se termina la función
 
   try {
+    // 1. Solicita categorías al backend
     const data = await getCategories();
-    const cats = Array.isArray(data?.content) ? data.content : (Array.isArray(data) ? data : []);
+
+    // 2. Se asume respuesta paginada: se obtiene data.content
+    const cats = Array.isArray(data?.content) ? data.content : [];
+
+    // 3. Limpia el contenido actual del <select>
     select.innerHTML = "";
 
+    // 4. Inserta un placeholder "Seleccione..."
     const opt = document.createElement("option");
     opt.value = "";
     opt.disabled = true;
@@ -277,44 +279,53 @@ async function cargarCategorias() {
     opt.textContent = "Seleccione...";
     select.appendChild(opt);
 
+    // 5. Recorre cada categoría y genera una <option> en el <select>
     cats.forEach((c) => {
-      const id = c.idCategoria ?? c.id ?? c.categoriaId;
-      const nombre = c.nombreCategoria ?? c.nombre ?? "Categoría";
+      const id = c.idCategoria ?? c.id ?? c.categoriaId; // posibles nombres de ID según backend
+      const nombre = c.nombreCategoria ?? c.nombre ?? "Categoría"; // posibles nombres de campo para nombre
       const option = document.createElement("option");
       option.value = id;
       option.textContent = nombre;
-      option.title = c.descripcion ?? "";
+      option.title = c.descripcion ?? ""; // la descripción se usa como tooltip
       select.appendChild(option);
     });
   } catch (err) {
+    // 6. Manejo de error si falla la carga
     console.error("Error cargando categorías:", err);
   }
 }
 
-// --- 14. Rellenar formulario para editar producto ---
-function setFormulario(item) {
-  const { form, modal, modalLabel, imageUrlHidden, imagePreview, imageFileInput } = bindOnce._refs || {};
-  if (!form) return;
 
+// --- 14. Rellenar formulario ---
+function setFormulario(item) {
+  // Obtiene referencias a los elementos del formulario y modal desde ActivarListeners
+  const { form, modal, modalLabel, imageUrlHidden, imagePreview, imageFileInput } = ActivarListeners._refs || {};
+  if (!form) return; // si no existe el formulario, termina la ejecución
+
+  // Asigna valores básicos del producto a los campos del formulario
   form.productId.value = item.id;
-  form.productName.value = item.nombre ?? item.nombreProducto ?? "";
+  form.productName.value = item.nombre ?? item.nombreProducto ?? ""; // usa nombre alternativo si existe
   form.productPrice.value = item.precio ?? item.precioUnitario ?? 0;
   form.productStock.value = item.stock ?? 0;
   form.productDescription.value = item.descripcion ?? "";
   form.productCategory.value = (item.categoriaId ?? item.idCategoria ?? "") || "";
+
+  // Formatea fecha en formato YYYY-MM-DD
   form.productDate.value = (item.fechaIngreso ?? item.createdAt ?? item.fecha ?? "").toString().slice(0, 10);
 
+  // Manejo de la imagen del producto
   if (imageUrlHidden) imageUrlHidden.value = item.imagen_url || item.imagenUrl || item.imageUrl || "";
-  if (imagePreview) imagePreview.src = imageUrlHidden?.value || "";
-  if (imageFileInput) imageFileInput.value = "";
+  if (imagePreview) imagePreview.src = imageUrlHidden?.value || ""; // muestra preview si existe
+  if (imageFileInput) imageFileInput.value = ""; // limpia campo file
 
+  // Actualiza título del modal y lo muestra
   modalLabel.textContent = "Editar Producto";
   modal.show();
 }
 
-// --- 15. Resetear formulario (al agregar nuevo producto) ---
+// --- 15. Limpiar formulario ---
 function limpiarFormulario() {
-  const { form, imageUrlHidden, imagePreview, imageFileInput } = bindOnce._refs || {};
+  const { form, imageUrlHidden, imagePreview, imageFileInput } = ActivarListeners._refs || {};
   if (!form) return;
   form.reset();
   form.productId.value = "";
@@ -323,7 +334,7 @@ function limpiarFormulario() {
   if (imageFileInput) imageFileInput.value = "";
 }
 
-// --- 16. Eliminar producto por ID ---
+// --- 16. Eliminar producto ---
 async function eliminarProducto(id) {
   try {
     await deleteProduct(id);
@@ -341,13 +352,14 @@ function renderPagination(current, totalPages) {
 
   pagination.innerHTML = "";
 
-  // Botón Anterior
+  // Crear botón "Anterior"
   const prev = document.createElement("li");
-  prev.className = `page-item ${current === 0 ? "disabled" : ""}`;
+  prev.className = `page-item ${current === 0 ? "disabled" : ""}`; // deshabilita si está en la primera página
   const prevLink = document.createElement("a");
   prevLink.className = "page-link";
   prevLink.href = "#";
   prevLink.textContent = "Anterior";
+  // Al hacer clic, retrocede una página si no está en la primera
   prevLink.addEventListener("click", (e) => {
     e.preventDefault();
     if (current > 0) {
@@ -358,14 +370,15 @@ function renderPagination(current, totalPages) {
   prev.appendChild(prevLink);
   pagination.appendChild(prev);
 
-  // Números de página
+  // Crear botones numéricos para cada página
   for (let i = 0; i < totalPages; i++) {
     const li = document.createElement("li");
-    li.className = `page-item ${i === current ? "active" : ""}`;
+    li.className = `page-item ${i === current ? "active" : ""}`; // resalta la página actual
     const link = document.createElement("a");
     link.className = "page-link";
     link.href = "#";
-    link.textContent = i + 1;
+    link.textContent = i + 1; // muestra número de página
+    // Al hacer clic, carga la página seleccionada
     link.addEventListener("click", (e) => {
       e.preventDefault();
       currentPage = i;
@@ -375,13 +388,14 @@ function renderPagination(current, totalPages) {
     pagination.appendChild(li);
   }
 
-  // Botón Siguiente
+  // Crear botón "Siguiente"
   const next = document.createElement("li");
-  next.className = `page-item ${current >= totalPages - 1 ? "disabled" : ""}`;
+  next.className = `page-item ${current >= totalPages - 1 ? "disabled" : ""}`; // deshabilita si está en la última página
   const nextLink = document.createElement("a");
   nextLink.className = "page-link";
   nextLink.href = "#";
   nextLink.textContent = "Siguiente";
+  // Al hacer clic, avanza una página si no está en la última
   nextLink.addEventListener("click", (e) => {
     e.preventDefault();
     if (current < totalPages - 1) {
@@ -391,4 +405,5 @@ function renderPagination(current, totalPages) {
   });
   next.appendChild(nextLink);
   pagination.appendChild(next);
+
 }

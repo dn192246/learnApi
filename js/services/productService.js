@@ -1,6 +1,5 @@
 // js/services/productService.js
-//const API_URL = 'localhost:8080/api/products'; //Local
-const API_URL = "https://learnapifront-9de8a2348f9a.herokuapp.com/api/products"; //Remoto
+const API_URL = "https://learnapifront-9de8a2348f9a.herokuapp.com/api/products";
 
 export async function getProducts(page = 0, size = 10) {
   const res = await fetch(`${API_URL}/getAllProducts`, {
