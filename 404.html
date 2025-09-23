@@ -117,30 +117,5 @@
     </div>
   </div>
 
-  <script>
-    // Enrutar la búsqueda a tu página /buscar o a Google con site:
-    function handleSearch(e){
-      e.preventDefault();
-      const q = (document.getElementById('q').value || '').trim();
-      if(!q){ document.getElementById('q').focus(); return false; }
-      // Cambia esta URL si tienes una página de resultados propia
-      const url = '/buscar?q=' + encodeURIComponent(q);
-      window.location.assign(url);
-      return false;
-    }
-    function reportBroken(){
-      const subject = encodeURIComponent('Enlace roto en el sitio');
-      const body = encodeURIComponent('Hola, encontré un enlace roto en: ' + window.location.href);
-      window.location.href = `mailto:soporte@tusitio.com?subject=${subject}&body=${body}`;
-    }
-    // Consejo aleatorio para guiar al usuario
-    const tips = [
-      'Verifica la ortografía de la URL.',
-      'Vuelve al inicio y navega desde el menú.',
-      'Usa el cuadro de búsqueda para encontrar lo que necesitas.',
-      'Si sigues viendo este error, contáctanos.'
-    ];
-    document.getElementById('tip').textContent = tips[Math.floor(Math.random()*tips.length)];
-  </script>
 </body>
 </html>
